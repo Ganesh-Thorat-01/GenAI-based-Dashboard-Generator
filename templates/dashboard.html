@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.0/papaparse.min.js"></script>
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        /* Full-page loading spinner */
+        .loading {
+            display: flex;
+            position: fixed;
+            z-index: 999;
+            height: 100%;
+            width: 100%;
+            top: 0;
+            left: 0;
+            background-color: rgba(255, 255, 255, 0.8);
+            text-align: center;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+
+        .chart-container1 {
+            display: none;
+            width: 100%;
+            height: 100%;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container1 mt-5">
+        <h1>Dashboard</h1>
+        <div id="loading" class="loading">
+            <div class="spinner-border text-primary" role="status">
+                <span class="sr-only">Loading...</span>
+            </div>
+        </div>
+        <div id="chart-container1" class="chart-container1">
+            <!-- Chart will be injected here -->
+        </div>
+    </div>
+
+    <!-- Include Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+        function fetchChartCode() {
+            fetch('/get_chart_code')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.chart_code) {
+                        // Hide loading animation and show chart container
+                        document.getElementById("loading").style.display = "none";
+                        document.getElementById("chart-container1").style.display = "block";
+                        // Inject chart code and execute it
+                        const chartContainer1 = document.getElementById("chart-container1");
+
+                        // Replace the innerHTML of the container
+                        chartContainer1.innerHTML = data.chart_code;
+
+                        // Get all script elements inside the newly added content
+                        const scripts = chartContainer1.getElementsByTagName("script");
+
+                        // Create and append script elements to the document to execute them
+                        for (let i = 0; i < scripts.length; i++) {
+                            const script = document.createElement("script");
+                            if (scripts[i].src) {
+                                // If it's an external script, copy the src attribute
+                                script.src = scripts[i].src;
+                                document.head.appendChild(script);
+                            } else {
+                                // If it's an inline script, set the textContent
+                                script.textContent = scripts[i].innerHTML;
+                                document.body.appendChild(script);
+                            }
+                        }
+
+
+                    } else {
+                        console.error('Failed to load chart code.');
+                    }
+                })
+                .catch(error => {
+                    console.error('Error fetching chart code:', error);
+                });
+        }
+
+        // Fetch chart code when page loads
+        document.addEventListener("DOMContentLoaded", fetchChartCode);
+    </script>
+
+</body>
+
+</html>
